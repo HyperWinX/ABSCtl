@@ -8,4 +8,5 @@ set(MAIN_SRC
   src/util.cpp
   src/worker.cpp
   src/pkg_checker.cpp
+  src/configparse.cpp
 PARENT_SCOPE)
