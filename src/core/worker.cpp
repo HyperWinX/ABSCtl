@@ -6,39 +6,49 @@
 #include <core/checker.hpp>
 #include <core/worker.hpp>
 #include <parsers/argparse.hpp>
+#include <util/constants.hpp>
+#include <util/util.hpp>
 
+
+void absctl::worker::set_configuration(absctl::configuration& conf) noexcept {
+  config = conf;
+}
 
 std::fstream absctl::worker::open_config_file() noexcept {
-  filename = "/home/" + get_username() + "/.config/absctl/tracked_files";
+  filename = get_tracked_files_path();
+  if (!std::filesystem::exists(get_tracked_files_path())) 
+    create_config();
   return std::fstream{filename};
 }
 
 void absctl::worker::get_all_packages() noexcept {
-  std::system("pacman -Q | awk '{print $1}' > /tmp/all_packages");
-  std::ifstream file("/tmp/all_packages");
+  std::system(GET_ALL_PACKAGES_CMD);
+  std::ifstream file(TMP_PACKAGES_PATH);
+  std::string tmp;
+
   while (!file.eof()) {
-    std::string tmp;
     std::getline(file, tmp, '\n');
     packages.push_back(tmp);
+    tmp.clear();
   }
   file.close();
-  std::filesystem::remove("/tmp/all_packages");
+  std::filesystem::remove(TMP_PACKAGES_PATH);
 }
 
-void absctl::worker::parse_config_file() noexcept {
+void absctl::worker::parse_tracked_packages() noexcept {
+  std::string str;
+
   while (!config_fd.eof()) {
-    std::string str;
     std::getline(config_fd, str, '\n');
     if (str.length() <= 1) continue;
     all_packages.push_back(str);
+    str.clear();
   }
 }
 
 void absctl::worker::save_config() noexcept {
   config_fd.close();
-  std::filesystem::remove(filename);
-  std::system(std::string{"touch " + filename}.c_str());
-  config_fd = open_config_file();
+  config_fd.open(filename, std::ios::in | std::ios::out | std::ios::trunc);
 
   for (std::string& pkg : all_packages)
     config_fd << pkg + '\n';
@@ -46,22 +56,22 @@ void absctl::worker::save_config() noexcept {
   config_fd.close();
 }
 
-void absctl::worker::try_create_config() const noexcept {
-  auto path = "/home/" + get_username() + "/.config/absctl";
-  system(std::string("mkdir -p " + path + "&& touch " + path + "/tracked_files").c_str());
+void absctl::worker::create_config() const noexcept {
+  std::string path = get_config_dir_path();
+  system(get_config_creation_cmd().c_str());
 }
 
 void absctl::worker::track_packages() noexcept {
   pkg_checker checker{packages.size()};
   std::vector<std::string> URLs{packages.size()};
+  
   for (size_t i = 0; i < packages.size(); ++i)
-    URLs[i] = "https://gitlab.archlinux.org/archlinux/packaging/packages/" + packages[i] + ".git";
+    URLs[i] = construct_url(packages[i]);
 
   checker.verify_packages(URLs, packages);
   
   for (std::string& pkg : packages) {
     if (std::find(all_packages.begin(), all_packages.end(), pkg) == all_packages.end()) {
-      std::cout << "Saving\n";
       all_packages.push_back(pkg);
     }
   }
@@ -71,7 +81,6 @@ void absctl::worker::add_packages(std::vector<argument>& args) noexcept {
   for (size_t i = 1; i < args.size(); ++i){
     switch (args[i].type) {
       case arg_type::ALL:
-        std::cout << "Fetching all packages...\n";
         get_all_packages();
         return;
       case absctl::arg_type::VALUE:
@@ -86,35 +95,30 @@ void absctl::worker::add_packages(std::vector<argument>& args) noexcept {
 int absctl::worker::process(absctl::arg_type work_type) noexcept {
   switch(work_type) {
     case absctl::arg_type::TRACK:
-      std::cout << "Tracking mode" << std::endl;
       config_fd = open_config_file();
 
       if (!config_fd.is_open() || config_fd.bad())
-        try_create_config();
-      config_fd = open_config_file();
-      if (!config_fd.is_open() || config_fd.bad())
         return 1;
       
-      parse_config_file();
+      parse_tracked_packages();
       track_packages();
       save_config();
       break;
+    case absctl::arg_type::UNTRACK:
+      break;
     case absctl::arg_type::BUILD:
-      std::cout << "Building mode" << std::endl;
       config_fd = open_config_file();
 
       if (!config_fd.is_open() || config_fd.bad())
-        try_create_config();
+        create_config();
       config_fd = open_config_file();
       if (!config_fd.is_open() || config_fd.bad())
         return 1;
       
-      parse_config_file();
-      system(std::string{"mkdir -p " + config.repo_directory}.c_str());
-      for (std::string& package : packages) {
-        system(std::string{"cd " + config.repo_directory + " && git clone https://gitlab.archlinux.org/archlinux/packaging/packages/" + package + ".git && cd " + package + " && makepkg -si " + config.makepkg_args}.c_str());
-      }
-    case absctl::arg_type::UNTRACK:
+      parse_tracked_packages();
+      system(get_repos_mkdir_cmd(config.repo_directory).c_str());
+      for (std::string& package : packages)
+        system(get_build_command(package, config.repo_directory, config.makepkg_args).c_str());
       break;
     default:
       return 1;

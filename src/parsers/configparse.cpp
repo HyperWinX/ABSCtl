@@ -29,8 +29,6 @@ std::vector<absctl::token> absctl::tokenizer::tokenize() {
   std::string buf;
 
   while (peek()) {
-    std::cout << "loop\n";
-    int a = 5;
     if (std::isalpha(peek().value())) {
       buf.push_back(consume());
       while (peek() && !std::isspace(peek().value()))
@@ -69,6 +67,7 @@ void absctl::parser::skip() {
 
 std::optional<absctl::statement> absctl::parser::parse_statement() {
   absctl::statement statement;
+  
   if (!peek()) return {};
   if (!statement_assoc.contains(peek()->type)) {
     std::cout << "unknown statement type\n";

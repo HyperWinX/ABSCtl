@@ -10,6 +10,8 @@
 
 
 namespace absctl {
+  struct configuration;
+  
   enum token_type {
     REPO_DIRECTORY,
     ERROR_IS_FATAL,
@@ -61,8 +63,12 @@ namespace absctl {
     void skip();
   
   public:
+    tokenizer() = default;
     tokenizer(std::string contents) : i(0), contents(contents){}
+
     std::vector<token> tokenize();
+
+    ~tokenizer() = default;
   };
 
   class parser {
@@ -76,7 +82,11 @@ namespace absctl {
     std::optional<statement> parse_statement();
 
   public:
+    parser() = default;
     parser(std::vector<token>& tokens) : i(0), tokens(tokens){}
-    configuration parse();
+
+    absctl::configuration parse();
+
+    ~parser() = default;
   };
 }

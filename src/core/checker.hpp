@@ -29,13 +29,9 @@ namespace absctl {
 
     void setup_transfer(transfer*, int);
   public:
-    pkg_checker(size_t cnt) : transfers_cnt(cnt) {
+    pkg_checker(size_t cnt) : transfers_cnt(cnt), handles(cnt), responses(cnt) {
       curl = curl_multi_init();
-      handles = std::vector<CURL*>{cnt};
-      responses = std::vector<std::string>{cnt};
-
       curl_global_init(CURL_GLOBAL_DEFAULT);
-
     }
 
     void verify_packages(std::vector<std::string>& URLs, std::vector<std::string>& packages);

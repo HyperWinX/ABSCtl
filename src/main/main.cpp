@@ -8,6 +8,7 @@
 #include <parsers/argparse.hpp>
 #include <parsers/configparse.hpp>
 #include <util/util.hpp>
+#include <util/constants.hpp>
 
 
 [[noreturn]] void display_help() {
@@ -29,12 +30,10 @@
 }
 
 [[noreturn]] void handle_single_argument(absctl::arg_type arg) {
-  switch(arg) {
-    case absctl::VERSION:
-      display_version();
-    default:
-      display_help();
-  }
+  if (arg == absctl::VERSION)
+    display_version();
+  else
+    display_help();
 }
 
 int main(int argc, char* argv[]) {
@@ -44,23 +43,32 @@ int main(int argc, char* argv[]) {
   if (argc == 1 || !strcmp(argv[1], "version"))
     display_version();
   
-  std::ifstream config("/etc/absctl.conf");
-  std::stringstream conf;
-  conf << config.rdbuf();
-  absctl::tokenizer tokenizer{conf.str()};
-  auto tokens = tokenizer.tokenize();
-  absctl::parser parser{tokens};
-  absctl::configuration config_info = parser.parse();
-  std::cout << "parsed config\n";
-  std::vector<absctl::argument> args{};
+  std::ifstream config_fd(absctl::CONF_PATH);
+  std::vector<absctl::argument> args;
+  std::stringstream config_contents;
+  std::vector<absctl::token> tokens;
+  absctl::configuration configuration;
+  absctl::tokenizer tokenizer;
+  absctl::parser parser;
+  absctl::worker worker;
 
-  if (absctl::parse_args(argc, argv, args))
+  config_contents << config_fd.rdbuf();
+  tokenizer = absctl::tokenizer{config_contents.str()};
+  tokens = tokenizer.tokenize();
+  parser = absctl::parser{tokens};
+  configuration = parser.parse();
+
+  if (!absctl::parse_args(argc, argv, args))
     display_help();
   
   if (args.size() == 1)
     handle_single_argument(args[0].type);
+  
+  if (configuration.repo_directory.empty()) {
+    exit(1);
+  }
 
-  absctl::worker worker{config_info};
+  worker.set_configuration(configuration);
   worker.add_packages(args);
   return worker.process(args[0].type);
 }
