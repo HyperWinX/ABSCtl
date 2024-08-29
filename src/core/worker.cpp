@@ -1,9 +1,12 @@
-#include "checker.hpp"
-#include <cstdio>
-#include <worker.hpp>
-#include <argparse.hpp>
 #include <iostream>
 #include <filesystem>
+
+#include <cstdio>
+
+#include <core/checker.hpp>
+#include <core/worker.hpp>
+#include <parsers/argparse.hpp>
+
 
 std::fstream absctl::worker::open_config_file() noexcept {
   filename = "/home/" + get_username() + "/.config/absctl/tracked_files";

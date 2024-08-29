@@ -3,10 +3,10 @@ cmake_minimum_required(VERSION 3.28)
 project(ABSCtl LANGUAGES CXX VERSION 0.0)
 
 set(MAIN_SRC
-  src/main.cpp
-  src/argparse.cpp
-  src/util.cpp
-  src/worker.cpp
-  src/pkg_checker.cpp
-  src/configparse.cpp
+  src/main/main.cpp
+  src/core/worker.cpp
+  src/core/pkg_checker.cpp
+  src/parsers/argparse.cpp
+  src/parsers/configparse.cpp
+  src/util/util.cpp
 PARENT_SCOPE)

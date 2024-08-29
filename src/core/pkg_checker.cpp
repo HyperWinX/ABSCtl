@@ -1,17 +1,21 @@
-#include <cstring>
-#include <curl/curl.h>
-#include <curl/mprintf.h>
-#include <checker.hpp>
-#include <constants.hpp>
 #include <string>
 #include <unordered_set>
 #include <algorithm>
 #include <iostream>
 
+#include <cstring>
+
+#include <curl/curl.h>
+#include <curl/mprintf.h>
+
+#include <core/checker.hpp>
+#include <util/constants.hpp>
+
+
 size_t absctl::_save_response(void* ptr, size_t size, size_t nmemb, std::string* f) {
   char buf[size * nmemb + 1];
   buf[size * nmemb] = '\0';
-  f->operator=(buf);
+  *f = buf;
   return nmemb * size;
 }
 

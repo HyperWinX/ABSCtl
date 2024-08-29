@@ -1,11 +1,14 @@
 #pragma once
 
+#include <vector>
+#include <string>
+
+#include <cstdint>
+
 #include <curl/curl.h>
 #include <curl/mprintf.h>
 #include <curl/multi.h>
-#include <vector>
-#include <string>
-#include <cstdint>
+
 
 namespace absctl {
   size_t _save_response(void* ptr, size_t size, size_t nmemb, std::string* f);

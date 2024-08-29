@@ -1,11 +1,14 @@
 #include <iostream>
-#include <cstring>
-#include <version.hpp>
-#include <util.hpp>
-#include <argparse.hpp>
-#include <worker.hpp>
-#include <configparse.hpp>
 #include <sstream>
+
+#include <cstring>
+
+#include <main/version.hpp>
+#include <core/worker.hpp>
+#include <parsers/argparse.hpp>
+#include <parsers/configparse.hpp>
+#include <util/util.hpp>
+
 
 [[noreturn]] void display_help() {
   std::cout << "Usage: absctl [COMMAND] [OPTIONS]\n\n";
