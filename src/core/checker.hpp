@@ -8,7 +8,7 @@
 
 
 namespace absctl {
-  size_t _save_response(void* ptr, size_t size, size_t nmemb, FILE* f);
+  size_t _save_response(void* ptr, size_t size, size_t nmemb, std::string* f);
   class pkg_checker {
   private:
 
