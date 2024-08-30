@@ -3,31 +3,21 @@
 #include <vector>
 #include <string>
 
-#include <cstdint>
-
 #include <curl/curl.h>
-#include <curl/mprintf.h>
 #include <curl/multi.h>
 
 
 namespace absctl {
-  size_t _save_response(void* ptr, size_t size, size_t nmemb, std::string* f);
+  size_t _save_response(void* ptr, size_t size, size_t nmemb, FILE* f);
   class pkg_checker {
   private:
-    struct transfer {
-      CURL* easy;
-      std::uint32_t num;
-      FILE* out;
-    };
 
     CURLM* curl;
     CURLcode res;
-    transfer* transfers;
     std::vector<CURL*> handles;
     std::vector<std::string> responses;
     size_t transfers_cnt;
-
-    void setup_transfer(transfer*, int);
+    
   public:
     pkg_checker(size_t cnt) : transfers_cnt(cnt), handles(cnt), responses(cnt) {
       curl = curl_multi_init();
