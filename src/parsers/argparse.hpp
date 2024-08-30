@@ -6,7 +6,7 @@
 
 #include <cstdint>
 
-#include <ext/eternal.hpp>
+#include <mapbox/eternal.hpp>
 
 
 namespace absctl {

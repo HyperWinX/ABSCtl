@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.5)
 
 project(ABSCtl LANGUAGES CXX VERSION 0.0)
 
@@ -14,4 +14,5 @@ add_subdirectory(src)
 add_executable(absctl ${MAIN_SRC})
 target_compile_options(absctl PUBLIC -g)
 target_include_directories(absctl PUBLIC ${INCLUDE_DIR})
+target_include_directories(absctl PUBLIC dist/eternal/include)
 target_link_libraries(absctl curl)

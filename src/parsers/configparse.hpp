@@ -6,7 +6,7 @@
 #include <optional>
 
 #include <core/worker.hpp>
-#include <ext/eternal.hpp>
+#include <mapbox/eternal.hpp>
 
 
 namespace absctl {
