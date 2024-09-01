@@ -27,9 +27,10 @@ void absctl::worker::get_all_packages() noexcept {
   std::string tmp;
 
   while (!file.eof()) {
-    std::getline(file, tmp, '\n');
+    package tmp;
+    std::getline(file, tmp.name, ' ');
+    std::getline(file, tmp.version, '\n');
     packages.push_back(tmp);
-    tmp.clear();
   }
   file.close();
   std::filesystem::remove(TMP_PACKAGES_PATH);
@@ -39,10 +40,10 @@ void absctl::worker::parse_tracked_packages() noexcept {
   std::string str;
 
   while (!config_fd.eof()) {
-    std::getline(config_fd, str, '\n');
-    if (str.length() <= 1) continue;
-    all_packages.push_back(str);
-    str.clear();
+    package tmp;
+    std::getline(config_fd, tmp.name, ' ');
+    std::getline(config_fd, tmp.version, '\n');
+    all_packages.push_back(tmp);
   }
 }
 
@@ -50,8 +51,8 @@ void absctl::worker::save_config() noexcept {
   config_fd.close();
   config_fd.open(filename, std::ios::in | std::ios::out | std::ios::trunc);
 
-  for (std::string& pkg : all_packages)
-    config_fd << pkg + '\n';
+  for (package& pkg : all_packages)
+    config_fd << pkg.name + ' ' + pkg.version + '\n';
   config_fd.flush();
   config_fd.close();
 }
@@ -66,12 +67,14 @@ void absctl::worker::track_packages() noexcept {
   std::vector<std::string> URLs{packages.size()};
   
   for (size_t i = 0; i < packages.size(); ++i)
-    URLs[i] = construct_url(packages[i]);
+    URLs[i] = construct_url(packages[i].name);
 
   checker.verify_packages(URLs, packages);
   
-  for (std::string& pkg : packages) {
-    if (std::find(all_packages.begin(), all_packages.end(), pkg) == all_packages.end()) {
+  for (package& pkg : packages) {
+    if (std::find_if(all_packages.begin(), all_packages.end(), [&pkg](const package& spkg) {
+      return spkg.name == pkg.name;
+    }) == all_packages.end()) {
       all_packages.push_back(pkg);
     }
   }
@@ -84,7 +87,7 @@ void absctl::worker::add_packages(std::vector<argument>& args) noexcept {
         get_all_packages();
         return;
       case absctl::arg_type::VALUE:
-        packages.push_back(args[i].value.value());
+        packages.push_back({args[i].value.value()});
         break;
       default:
         return;
@@ -117,8 +120,8 @@ int absctl::worker::process(absctl::arg_type work_type) noexcept {
       
       parse_tracked_packages();
       system(get_repos_mkdir_cmd(config.repo_directory).c_str());
-      for (std::string& package : packages)
-        system(get_build_command(package, config.repo_directory, config.makepkg_args).c_str());
+      for (package& package : packages)
+        system(get_build_command(package.name, config.repo_directory, config.makepkg_args).c_str());
       break;
     default:
       return 1;

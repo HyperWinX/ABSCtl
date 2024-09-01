@@ -6,6 +6,8 @@
 #include <curl/curl.h>
 #include <curl/multi.h>
 
+#include <core/worker.hpp>
+
 
 namespace absctl {
   size_t _save_response(void* ptr, size_t size, size_t nmemb, std::string* f);
@@ -24,7 +26,7 @@ namespace absctl {
       curl_global_init(CURL_GLOBAL_DEFAULT);
     }
 
-    void verify_packages(std::vector<std::string>& URLs, std::vector<std::string>& packages);
+    void verify_packages(std::vector<std::string>& URLs, std::vector<package>& packages);
 
     ~pkg_checker() {
       for (size_t i = 0; i < transfers_cnt; ++i) {

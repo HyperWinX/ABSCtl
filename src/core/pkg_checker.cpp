@@ -1,7 +1,6 @@
 #include <string>
 #include <unordered_set>
 #include <algorithm>
-#include <iostream>
 
 #include <cstring>
 
@@ -9,18 +8,17 @@
 #include <curl/mprintf.h>
 
 #include <core/checker.hpp>
+#include <core/worker.hpp>
 #include <util/constants.hpp>
 
 
 size_t absctl::_save_response(void* ptr, size_t size, size_t nmemb, std::string* f) {
-  *f = static_cast<char*>(ptr);
-  std::cout << "Buffer: " << f->c_str() << std::endl;
+  *f = std::string{static_cast<char*>(ptr), size * nmemb};
   return nmemb * size;
 }
 
-void absctl::pkg_checker::verify_packages(std::vector<std::string>& URLs, std::vector<std::string>& packages) {
-  std::unordered_set<std::string> small_set;
-  std::vector<std::string> failed_packages;
+void absctl::pkg_checker::verify_packages(std::vector<std::string>& URLs, std::vector<package>& packages) {
+  std::unordered_set<std::string> failed_names;
   int running = 0;
 
   for (size_t i = 0; i < packages.size(); ++i) {
@@ -41,16 +39,16 @@ void absctl::pkg_checker::verify_packages(std::vector<std::string>& URLs, std::v
 
   for (size_t i = 0; i < packages.size(); ++i) {
     if (responses[i] == FAIL_STR)
-      failed_packages.push_back(packages[i]);
+      failed_names.insert(packages[i].name);
   }
 
-  if (failed_packages.size() == 0)
+  if (failed_names.size() == 0)
     return;
-
-  small_set = std::unordered_set<std::string>(failed_packages.begin(), failed_packages.end());
   
-  auto it = std::remove_if(packages.begin(), packages.end(), [&small_set](const std::string& str) {
-    return small_set.find(str) != small_set.end();
-  });
-  packages.erase(it, packages.end());
+  packages.erase(
+    std::remove_if(packages.begin(), packages.end(), [&failed_names](const package& pkg) {
+      return failed_names.count(pkg.name) > 0;
+    }),
+    packages.end()
+  );
 }

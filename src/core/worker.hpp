@@ -14,10 +14,15 @@ namespace absctl {
     bool exit_after_error;
   };
 
+  struct package {
+    std::string name;
+    std::string version;
+  };
+
   class worker {
   private:
-    std::vector<std::string> packages;
-    std::vector<std::string> all_packages;
+    std::vector<package> packages;
+    std::vector<package> all_packages;
     std::fstream config_fd;
     std::string filename;
     configuration config;
