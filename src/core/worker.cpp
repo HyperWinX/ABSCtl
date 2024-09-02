@@ -1,5 +1,6 @@
 #include <iostream>
 #include <filesystem>
+#include <unordered_set>
 
 #include <cstdio>
 
@@ -113,11 +114,12 @@ void absctl::worker::track_packages() noexcept {
 }
 
 void absctl::worker::untrack_packages() noexcept {
+  std::cout << "[*] Untracking packages...\n";
   all_packages.erase(
     std::remove_if(all_packages.begin(), all_packages.end(), [this](const package& pkg) {
       return std::find(this->packages.begin(), this->packages.end(), pkg) != this->packages.end();
     }),
-    packages.end()
+    all_packages.end()
   );
 }
 

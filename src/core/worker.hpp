@@ -19,8 +19,8 @@ namespace absctl {
     std::string name;
     std::string version;
 
-    bool operator==(const package& pkg) {
-      return (name == pkg.name) && (version == pkg.version);
+    bool operator==(const package& pkg) const {
+      return this->name == pkg.name;
     }
   };
 
