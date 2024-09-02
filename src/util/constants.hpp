@@ -12,6 +12,7 @@ namespace absctl {
   static constexpr char TOUCH_CMD[] = "touch ";
   static constexpr char CMD_JOIN[] = " && ";
   static constexpr char CD_CMD[] = "cd ";
+  static constexpr char PACMAN_GET_ALL[] = "pacman -Q > /tmp/all_packages";
 
   static constexpr char URL_PART1[] = "https://gitlab.archlinux.org/archlinux/packaging/packages/";
   static constexpr char URL_PART2[] = ".git";
@@ -21,4 +22,7 @@ namespace absctl {
 
   static constexpr char CONFIG_DIR_PATH_PART1[] = "/home/";
   static constexpr char CONFIG_DIR_PATH_PART2[] = "/.config/absctl";
+
+  static constexpr char GET_PACKAGE_VER_CMD_PART1[] = "pacman -Q ";
+  static constexpr char GET_PACKAGE_VER_CMD_PART2[] = " | awk '{print $2}' > /tmp/all_packages";
 }

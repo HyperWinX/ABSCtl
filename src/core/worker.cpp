@@ -6,6 +6,7 @@
 #include <core/checker.hpp>
 #include <core/worker.hpp>
 #include <parsers/argparse.hpp>
+#include <unordered_map>
 #include <util/constants.hpp>
 #include <util/util.hpp>
 
@@ -48,6 +49,7 @@ void absctl::worker::parse_tracked_packages() noexcept {
 }
 
 void absctl::worker::save_config() noexcept {
+  std::cout << "[*] Saving tracked packages...\n";
   config_fd.close();
   config_fd.open(filename, std::ios::in | std::ios::out | std::ios::trunc);
 
@@ -62,15 +64,45 @@ void absctl::worker::create_config() const noexcept {
   system(get_config_creation_cmd().c_str());
 }
 
+std::string absctl::worker::get_package_version(const std::string& name) noexcept {
+  std::string version;
+  if (system((GET_PACKAGE_VER_CMD_PART1 + name + GET_PACKAGE_VER_CMD_PART2).c_str()))
+    exit(1);
+  std::ifstream version_fd{TMP_PACKAGES_PATH};
+  std::getline(version_fd, version, '\0');
+  return version;
+}
+
+std::unordered_map<std::string, std::string> absctl::worker::get_all_versions() noexcept {
+  std::unordered_map<std::string, std::string> map;
+  system(PACMAN_GET_ALL);
+  std::ifstream fd{TMP_PACKAGES_PATH};
+  std::string name, version;
+  
+  while (!fd.eof()) {
+    std::getline(fd, name, ' ');
+    std::getline(fd, version, '\n');
+    map[name] = version;
+    name.clear();
+    version.clear();
+  }
+
+  return map;
+}
+
 void absctl::worker::track_packages() noexcept {
   pkg_checker checker{packages.size()};
   std::vector<std::string> URLs{packages.size()};
   
+  std::cout << "[*] Constructing URL strings...\n";
   for (size_t i = 0; i < packages.size(); ++i)
     URLs[i] = construct_url(packages[i].name);
-
-  checker.verify_packages(URLs, packages);
   
+  std::cout << "[*] Verifying all packages - making multiple requests...\n";
+  checker.verify_packages(URLs, packages);
+  std::cout << "[*] Parsing all package versions...\n";
+  auto map = get_all_versions();
+  std::cout << "[*] Tracking all packages...\n";
   for (package& pkg : packages) {
     if (std::find_if(all_packages.begin(), all_packages.end(), [&pkg](const package& spkg) {
       return spkg.name == pkg.name;
@@ -78,6 +110,15 @@ void absctl::worker::track_packages() noexcept {
       all_packages.push_back(pkg);
     }
   }
+}
+
+void absctl::worker::untrack_packages() noexcept {
+  all_packages.erase(
+    std::remove_if(all_packages.begin(), all_packages.end(), [this](const package& pkg) {
+      return std::find(this->packages.begin(), this->packages.end(), pkg) != this->packages.end();
+    }),
+    packages.end()
+  );
 }
 
 void absctl::worker::add_packages(std::vector<argument>& args) noexcept {
@@ -108,6 +149,14 @@ int absctl::worker::process(absctl::arg_type work_type) noexcept {
       save_config();
       break;
     case absctl::arg_type::UNTRACK:
+      config_fd = open_config_file();
+
+      if (!config_fd.is_open() || config_fd.bad())
+        return 1;
+
+      parse_tracked_packages();
+      untrack_packages();
+      save_config();
       break;
     case absctl::arg_type::BUILD:
       config_fd = open_config_file();

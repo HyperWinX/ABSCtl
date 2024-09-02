@@ -1,5 +1,6 @@
 #pragma once
 
+#include <unordered_map>
 #include <vector>
 #include <fstream>
 
@@ -17,6 +18,10 @@ namespace absctl {
   struct package {
     std::string name;
     std::string version;
+
+    bool operator==(const package& pkg) {
+      return (name == pkg.name) && (version == pkg.version);
+    }
   };
 
   class worker {
@@ -33,7 +38,9 @@ namespace absctl {
     void save_config() noexcept;
     void parse_tracked_packages() noexcept;
     void track_packages() noexcept;
-    void untrack_packages(std::string& pkg) noexcept;
+    void untrack_packages() noexcept;
+    std::string get_package_version(const std::string& name) noexcept;
+    std::unordered_map<std::string, std::string> get_all_versions() noexcept;
   public:
     worker() = default;
     worker(configuration conf) : config(conf) {}
