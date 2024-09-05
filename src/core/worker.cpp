@@ -16,6 +16,10 @@ void absctl::worker::set_configuration(absctl::configuration& conf) noexcept {
   config = conf;
 }
 
+void absctl::worker::set_logger(absctl::logger& log) noexcept {
+  this->log = log;
+}
+
 std::fstream absctl::worker::open_config_file() noexcept {
   filename = get_tracked_files_path();
   if (!std::filesystem::exists(get_tracked_files_path())) 

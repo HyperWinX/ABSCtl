@@ -6,6 +6,7 @@
 
 #include <cstdint>
 
+#include <core/logging/logging.hpp>
 #include <mapbox/eternal.hpp>
 
 
@@ -15,6 +16,7 @@ namespace absctl {
     UNTRACK,
     BUILD,
     VALUE,
+    VERBOSITY,
     ALL,
     VERSION,
     HELP
@@ -22,7 +24,15 @@ namespace absctl {
 
   struct argument {
     arg_type type;
-    std::optional<std::string> value;
+    union {
+      std::optional<std::string> value;
+      error_level lvl;
+    };
+
+    ~argument() {
+      if (type != VERBOSITY)
+        value.~optional<std::string>();
+    }
   };
 
   MAPBOX_ETERNAL_CONSTEXPR const auto arg_assoc = mapbox::eternal::map<mapbox::eternal::string, arg_type>({
@@ -31,6 +41,13 @@ namespace absctl {
     { "build", arg_type::BUILD },
     { "version", arg_type::VERSION },
     { "help", arg_type::HELP }
+  });
+
+  MAPBOX_ETERNAL_CONSTEXPR const auto verbosity_args = mapbox::eternal::map<mapbox::eternal::string, error_level>({
+    { "--verror", error_level::NONFATAL_ERROR },
+    { "--vwarning", error_level::WARNING },
+    { "--vinfo", error_level::INFO },
+    { "--vdebug", error_level::DEBUG }
   });
 
   int parse_args(int argc, char* argv[], std::vector<argument>& args) noexcept;

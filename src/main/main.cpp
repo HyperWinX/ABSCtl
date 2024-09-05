@@ -5,6 +5,8 @@
 
 #include <main/version.hpp>
 #include <core/worker.hpp>
+#include <core/logging/logging.hpp>
+#include <core/exceptions/exception_handler.hpp>
 #include <parsers/argparse.hpp>
 #include <parsers/configparse.hpp>
 #include <util/util.hpp>
@@ -49,8 +51,12 @@ int main(int argc, char* argv[]) {
   std::vector<absctl::token> tokens;
   absctl::configuration configuration;
   absctl::tokenizer tokenizer;
+  absctl::logger logger;
   absctl::parser parser;
-  absctl::worker worker;
+  logger.set_verbosity(absctl::error_level::DEBUG);
+  absctl::exception_handler exc_handler = {logger};
+  absctl::worker worker{logger};
+  exc_handler._throw(absctl::exception_type::CONFIG_OPEN_FAIL);
 
   config_contents << config_fd.rdbuf();
   tokenizer = absctl::tokenizer{config_contents.str()};

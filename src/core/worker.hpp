@@ -4,6 +4,7 @@
 #include <vector>
 #include <fstream>
 
+#include <core/logging/logging.hpp>
 #include <parsers/argparse.hpp>
 #include <util/util.hpp>
 
@@ -31,6 +32,7 @@ namespace absctl {
     std::fstream config_fd;
     std::string filename;
     configuration config;
+    logger& log;
     
     std::fstream open_config_file() noexcept;
     void get_all_packages() noexcept;
@@ -42,13 +44,14 @@ namespace absctl {
     std::string get_package_version(const std::string& name) noexcept;
     std::unordered_map<std::string, std::string> get_all_versions() noexcept;
   public:
-    worker() = default;
-    worker(configuration conf) : config(conf) {}
+    worker(logger& log) : log(log) {}
+    worker(configuration conf, logger& log) : config(conf), log(log) {}
     worker(worker&&) = default;
     ~worker() = default;
 
     void add_packages(std::vector<argument>& args) noexcept;
     void set_configuration(configuration& conf) noexcept;
+    void set_logger(logger& log) noexcept;
     int process(arg_type work_type) noexcept;
   };
 }

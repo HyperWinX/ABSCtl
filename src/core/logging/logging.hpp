@@ -1,4 +1,8 @@
+#pragma once
+
 #include <ostream>
+
+
 namespace absctl {
   static constexpr char LOG_PREFIX[] = "[*] ";
   static constexpr char FATAL_PREFIX[] = "FATAL: ";

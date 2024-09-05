@@ -4,7 +4,7 @@ namespace absctl {
   static constexpr char FAIL_STR[] = "<html><body>You are being <a href=\"https://gitlab.archlinux.org/users/sign_in\">redirected</a>.</body></html>";
   static constexpr char GET_ALL_PACKAGES_CMD[] = "pacman -Q > /tmp/all_packages";
   static constexpr char TMP_PACKAGES_PATH[] = "/tmp/all_packages";
-  static constexpr char CONF_PATH[] = "/etc/absctl.conf";
+  static constexpr char CONF_PATH[] = "absctl.conf";
   static constexpr char GIT_CLONE_CMD[] = "git clone ";
   static constexpr char DEFAULT_MAKEPKG_ARGS[] = "-si";
   static constexpr char MAKEPKG_CMD[] = "makepkg ";
