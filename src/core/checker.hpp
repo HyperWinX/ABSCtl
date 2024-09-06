@@ -7,6 +7,7 @@
 #include <curl/multi.h>
 
 #include <core/worker.hpp>
+#include <core/logging/logging.hpp>
 
 
 namespace absctl {
@@ -19,9 +20,10 @@ namespace absctl {
     std::vector<CURL*> handles;
     std::vector<std::string> responses;
     size_t transfers_cnt;
+    logger& log;
     
   public:
-    pkg_checker(size_t cnt) : transfers_cnt(cnt), handles(cnt), responses(cnt) {
+    pkg_checker(size_t cnt, logger& log) : transfers_cnt(cnt), handles(cnt), responses(cnt), log(log) {
       curl = curl_multi_init();
       curl_global_init(CURL_GLOBAL_DEFAULT);
     }

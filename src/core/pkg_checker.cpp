@@ -28,6 +28,7 @@ void absctl::pkg_checker::verify_packages(std::vector<std::string>& URLs, std::v
     curl_easy_setopt(handles[i], CURLOPT_WRITEDATA, &responses[i]);
     curl_multi_add_handle(curl, handles[i]);
   }
+  log.log(DEBUG, std::format("Initialized {} handles", packages.size()).c_str());
 
   curl_multi_perform(curl, &running);
 
@@ -37,13 +38,18 @@ void absctl::pkg_checker::verify_packages(std::vector<std::string>& URLs, std::v
     curl_multi_perform(curl, &running);
   } while (running);
 
+
   for (size_t i = 0; i < packages.size(); ++i) {
-    if (responses[i] == FAIL_STR)
+    if (responses[i] == FAIL_STR) {
+      log.log(DEBUG, std::format("Package {} not found", packages[i].name).c_str());
       failed_names.insert(packages[i].name);
+    }
   }
 
-  if (failed_names.size() == 0)
+  if (failed_names.size() == 0) {
+    log.log(DEBUG, "All packages are found, skipping removal part");
     return;
+  }
   
   packages.erase(
     std::remove_if(packages.begin(), packages.end(), [&failed_names](const package& pkg) {

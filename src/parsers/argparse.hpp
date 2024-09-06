@@ -24,15 +24,7 @@ namespace absctl {
 
   struct argument {
     arg_type type;
-    union {
-      std::optional<std::string> value;
-      error_level lvl;
-    };
-
-    ~argument() {
-      if (type != VERBOSITY)
-        value.~optional<std::string>();
-    }
+    std::optional<std::string> value;
   };
 
   MAPBOX_ETERNAL_CONSTEXPR const auto arg_assoc = mapbox::eternal::map<mapbox::eternal::string, arg_type>({

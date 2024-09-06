@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/exceptions/exception_handler.hpp"
 #include <unordered_map>
 #include <vector>
 #include <fstream>
@@ -33,6 +34,7 @@ namespace absctl {
     std::string filename;
     configuration config;
     logger& log;
+    exception_handler& exc_handler;
     
     std::fstream open_config_file() noexcept;
     void get_all_packages() noexcept;
@@ -44,8 +46,8 @@ namespace absctl {
     std::string get_package_version(const std::string& name) noexcept;
     std::unordered_map<std::string, std::string> get_all_versions() noexcept;
   public:
-    worker(logger& log) : log(log) {}
-    worker(configuration conf, logger& log) : config(conf), log(log) {}
+    worker(logger& log, exception_handler& exc_handler) : log(log), exc_handler(exc_handler) {}
+    worker(configuration conf, logger& log, exception_handler& exc_handler) : config(conf), log(log), exc_handler(exc_handler) {}
     worker(worker&&) = default;
     ~worker() = default;
 

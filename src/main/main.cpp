@@ -54,9 +54,6 @@ int main(int argc, char* argv[]) {
   absctl::logger logger;
   absctl::parser parser;
   logger.set_verbosity(absctl::error_level::DEBUG);
-  absctl::exception_handler exc_handler = {logger};
-  absctl::worker worker{logger};
-  exc_handler._throw(absctl::exception_type::CONFIG_OPEN_FAIL);
 
   config_contents << config_fd.rdbuf();
   tokenizer = absctl::tokenizer{config_contents.str()};
@@ -66,6 +63,16 @@ int main(int argc, char* argv[]) {
 
   if (!absctl::parse_args(argc, argv, args))
     display_help();
+
+  for (auto& arg : args) {
+    switch (arg.type) {
+      case absctl::VERBOSITY:
+        logger.set_verbosity(absctl::verbosity_args.at(arg.value.value().c_str()));
+        break;
+      default:
+        continue;
+    }
+  }
   
   if (args.size() == 1)
     handle_single_argument(args[0].type);
@@ -73,6 +80,9 @@ int main(int argc, char* argv[]) {
   if (configuration.repo_directory.empty()) {
     exit(1);
   }
+
+  absctl::exception_handler exc_handler = {logger};
+  absctl::worker worker{logger, exc_handler};
 
   worker.set_configuration(configuration);
   worker.add_packages(args);

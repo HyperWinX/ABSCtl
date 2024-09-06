@@ -7,6 +7,7 @@ set(MAIN_SRC
   src/core/worker.cpp
   src/core/pkg_checker.cpp
   src/core/exceptions/exception_handler.cpp
+  src/core/logging/logging.cpp
   src/parsers/argparse.cpp
   src/parsers/configparse.cpp
   src/util/util.cpp

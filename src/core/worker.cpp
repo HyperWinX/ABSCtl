@@ -1,11 +1,11 @@
 #include <iostream>
 #include <filesystem>
-#include <unordered_set>
 
 #include <cstdio>
 
 #include <core/checker.hpp>
 #include <core/worker.hpp>
+#include <core/logging/logging.hpp>
 #include <parsers/argparse.hpp>
 #include <unordered_map>
 #include <util/constants.hpp>
@@ -22,8 +22,11 @@ void absctl::worker::set_logger(absctl::logger& log) noexcept {
 
 std::fstream absctl::worker::open_config_file() noexcept {
   filename = get_tracked_files_path();
-  if (!std::filesystem::exists(get_tracked_files_path())) 
+  if (!std::filesystem::exists(get_tracked_files_path())) {
+    log.log(DEBUG, "No tracked packages list available, creating new");
     create_config();
+  }
+    
   return std::fstream{filename};
 }
 
@@ -54,7 +57,7 @@ void absctl::worker::parse_tracked_packages() noexcept {
 }
 
 void absctl::worker::save_config() noexcept {
-  std::cout << "[*] Saving tracked packages...\n";
+  log.log(INFO, "Saving tracked packages...");
   config_fd.close();
   config_fd.open(filename, std::ios::in | std::ios::out | std::ios::trunc);
 
@@ -66,6 +69,7 @@ void absctl::worker::save_config() noexcept {
 
 void absctl::worker::create_config() const noexcept {
   std::string path = get_config_dir_path();
+  log.log(DEBUG, std::format("Creating config at {}", path).c_str());
   system(get_config_creation_cmd().c_str());
 }
 
@@ -96,18 +100,18 @@ std::unordered_map<std::string, std::string> absctl::worker::get_all_versions() 
 }
 
 void absctl::worker::track_packages() noexcept {
-  pkg_checker checker{packages.size()};
+  pkg_checker checker{packages.size(), log};
   std::vector<std::string> URLs{packages.size()};
   
-  std::cout << "[*] Constructing URL strings...\n";
+  log.log(INFO, "Constructing URL strings...");
   for (size_t i = 0; i < packages.size(); ++i)
     URLs[i] = construct_url(packages[i].name);
   
-  std::cout << "[*] Verifying all packages - making multiple requests...\n";
+  log.log(INFO, "Verifying all packages - making multiple requests....");
   checker.verify_packages(URLs, packages);
-  std::cout << "[*] Parsing all package versions...\n";
+  log.log(INFO, "Parsing all package versions...");
   auto map = get_all_versions();
-  std::cout << "[*] Tracking all packages...\n";
+  log.log(INFO, "Tracking all packages...");
   for (package& pkg : packages) {
     if (std::find_if(all_packages.begin(), all_packages.end(), [&pkg](const package& spkg) {
       return spkg.name == pkg.name;
@@ -118,7 +122,7 @@ void absctl::worker::track_packages() noexcept {
 }
 
 void absctl::worker::untrack_packages() noexcept {
-  std::cout << "[*] Untracking packages...\n";
+  log.log(INFO, "Untracking packages...");
   all_packages.erase(
     std::remove_if(all_packages.begin(), all_packages.end(), [this](const package& pkg) {
       return std::find(this->packages.begin(), this->packages.end(), pkg) != this->packages.end();
