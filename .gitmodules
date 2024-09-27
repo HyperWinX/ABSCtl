@@ -1,3 +1,6 @@
 [submodule "dist/eternal"]
 	path = dist/eternal
 	url = https://github.com/mapbox/eternal.git
+[submodule "dist/SQLiteCpp"]
+	path = dist/SQLiteCpp
+	url = https://github.com/SRombauts/SQLiteCpp.git
