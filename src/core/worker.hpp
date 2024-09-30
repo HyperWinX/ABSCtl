@@ -8,7 +8,7 @@
 #include <core/logging/logging.hpp>
 #include <parsers/argparse.hpp>
 #include <util/util.hpp>
-
+#include <parsers/package_db.hpp>
 
 namespace absctl {
   struct configuration {
@@ -28,6 +28,7 @@ namespace absctl {
 
   class worker {
   private:
+    database_connector all_packages_db;
     std::vector<package> packages;
     std::vector<package> all_packages;
     std::fstream config_fd;
@@ -45,10 +46,10 @@ namespace absctl {
     void untrack_packages() noexcept;
     std::string get_package_version(const std::string& name) noexcept;
     std::unordered_map<std::string, std::string> get_all_versions() noexcept;
+    bool is_tracked(std::string pkg);
   public:
-    worker(logger& log, exception_handler& exc_handler) : log(log), exc_handler(exc_handler) {}
-    worker(configuration conf, logger& log, exception_handler& exc_handler) : config(conf), log(log), exc_handler(exc_handler) {}
-    worker(worker&&) = default;
+    worker(logger& log, exception_handler& exc_handler) : all_packages_db(get_database_path()), log(log), exc_handler(exc_handler) {}
+    worker(configuration conf, logger& log, exception_handler& exc_handler) : all_packages_db(get_database_path()), config(conf), log(log), exc_handler(exc_handler) {}
     ~worker() = default;
 
     void add_packages(std::vector<argument>& args) noexcept;

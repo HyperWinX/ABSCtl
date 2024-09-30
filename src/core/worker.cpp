@@ -51,6 +51,8 @@ void absctl::worker::parse_tracked_packages() noexcept {
   while (!config_fd.eof()) {
     package tmp;
     std::getline(config_fd, tmp.name, ' ');
+    if (tmp.name.length() < 2)
+      continue;
     std::getline(config_fd, tmp.version, '\n');
     all_packages.push_back(tmp);
   }
@@ -97,6 +99,10 @@ std::unordered_map<std::string, std::string> absctl::worker::get_all_versions() 
   }
 
   return map;
+}
+
+bool absctl::worker::is_tracked(std::string pkg) {
+  
 }
 
 void absctl::worker::track_packages() noexcept {
@@ -154,7 +160,6 @@ int absctl::worker::process(absctl::arg_type work_type) noexcept {
       if (!config_fd.is_open() || config_fd.bad())
         return 1;
       
-      parse_tracked_packages();
       track_packages();
       save_config();
       break;

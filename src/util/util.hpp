@@ -2,7 +2,6 @@
 
 #include <string>
 
-#include <parsers/configparse.hpp>
 #include <util/constants.hpp>
 
 
@@ -11,6 +10,10 @@ namespace absctl {
 
   inline constexpr std::string construct_url(std::string& pkg) noexcept {
     return URL_PART1 + pkg + URL_PART2;
+  }
+
+  inline std::string get_database_path() noexcept {
+    return DATABASE_PATH_PART1 + get_username() + DATABASE_PATH_PART2;
   }
 
   inline std::string get_tracked_files_path() noexcept {
@@ -49,3 +52,5 @@ namespace absctl {
     return cmd;
   }
 }
+
+#include <parsers/configparse.hpp>

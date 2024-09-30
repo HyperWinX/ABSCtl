@@ -17,6 +17,9 @@ namespace absctl {
   static constexpr char URL_PART1[] = "https://gitlab.archlinux.org/archlinux/packaging/packages/";
   static constexpr char URL_PART2[] = ".git";
 
+  static constexpr char DATABASE_PATH_PART1[] = "/home/";
+  static constexpr char DATABASE_PATH_PART2[] = "/.config/absctl/packages.db";
+
   static constexpr char TRACKED_FILES_PATH_PART1[] = "/home/";
   static constexpr char TRACKED_FILES_PATH_PART2[] = "/.config/absctl/tracked_files";
 
