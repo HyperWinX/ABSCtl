@@ -1,5 +1,6 @@
 #pragma once
 
+#include "parsers/package_db.hpp"
 #include <vector>
 #include <string>
 
@@ -28,7 +29,7 @@ namespace absctl {
       curl_global_init(CURL_GLOBAL_DEFAULT);
     }
 
-    void verify_packages(std::vector<std::string>& URLs, std::vector<package>& packages);
+    void verify_packages(std::vector<std::string>& URLs, std::vector<package>& packages, database_connector& connector);
 
     ~pkg_checker() {
       for (size_t i = 0; i < transfers_cnt; ++i) {

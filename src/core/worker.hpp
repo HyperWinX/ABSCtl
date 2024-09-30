@@ -5,6 +5,8 @@
 #include <vector>
 #include <fstream>
 
+#include <alpm.h>
+
 #include <core/logging/logging.hpp>
 #include <parsers/argparse.hpp>
 #include <util/util.hpp>
@@ -36,6 +38,7 @@ namespace absctl {
     configuration config;
     logger& log;
     exception_handler& exc_handler;
+    alpm_handle_t* handle;
     
     std::fstream open_config_file() noexcept;
     void get_all_packages() noexcept;
@@ -48,8 +51,12 @@ namespace absctl {
     std::unordered_map<std::string, std::string> get_all_versions() noexcept;
     bool is_tracked(std::string pkg);
   public:
-    worker(logger& log, exception_handler& exc_handler) : all_packages_db(get_database_path()), log(log), exc_handler(exc_handler) {}
-    worker(configuration conf, logger& log, exception_handler& exc_handler) : all_packages_db(get_database_path()), config(conf), log(log), exc_handler(exc_handler) {}
+    worker(logger& log, exception_handler& exc_handler) :
+      all_packages_db(get_database_path(), log), log(log), exc_handler(exc_handler) {
+        
+      }
+    worker(configuration conf, logger& log, exception_handler& exc_handler) :
+      all_packages_db(get_database_path(), log), config(conf), log(log), exc_handler(exc_handler) { }
     ~worker() = default;
 
     void add_packages(std::vector<argument>& args) noexcept;

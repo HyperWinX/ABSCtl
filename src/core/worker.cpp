@@ -1,7 +1,10 @@
+#include "parsers/package_db.hpp"
 #include <iostream>
 #include <filesystem>
 
 #include <cstdio>
+
+#include <alpm.h>
 
 #include <core/checker.hpp>
 #include <core/worker.hpp>
@@ -101,10 +104,6 @@ std::unordered_map<std::string, std::string> absctl::worker::get_all_versions() 
   return map;
 }
 
-bool absctl::worker::is_tracked(std::string pkg) {
-  
-}
-
 void absctl::worker::track_packages() noexcept {
   pkg_checker checker{packages.size(), log};
   std::vector<std::string> URLs{packages.size()};
@@ -114,27 +113,24 @@ void absctl::worker::track_packages() noexcept {
     URLs[i] = construct_url(packages[i].name);
   
   log.log(INFO, "Verifying all packages - making multiple requests....");
-  checker.verify_packages(URLs, packages);
+  checker.verify_packages(URLs, packages, all_packages_db);
   log.log(INFO, "Parsing all package versions...");
   auto map = get_all_versions();
   log.log(INFO, "Tracking all packages...");
+
+
   for (package& pkg : packages) {
-    if (std::find_if(all_packages.begin(), all_packages.end(), [&pkg](const package& spkg) {
-      return spkg.name == pkg.name;
-    }) == all_packages.end()) {
-      all_packages.push_back(pkg);
-    }
+    all_packages_db.add_pkg(pkg.name, map[pkg.name], db_type::TRACKED);
   }
+  all_packages_db.commit_changes();
 }
 
 void absctl::worker::untrack_packages() noexcept {
   log.log(INFO, "Untracking packages...");
-  all_packages.erase(
-    std::remove_if(all_packages.begin(), all_packages.end(), [this](const package& pkg) {
-      return std::find(this->packages.begin(), this->packages.end(), pkg) != this->packages.end();
-    }),
-    all_packages.end()
-  );
+  for (package& pkg : packages) {
+    all_packages_db.remove_pkg(pkg.name, db_type::TRACKED);
+    all_packages_db.add_pkg(pkg.name, "", db_type::UNTRACKED);
+  }
 }
 
 void absctl::worker::add_packages(std::vector<argument>& args) noexcept {
@@ -190,5 +186,6 @@ int absctl::worker::process(absctl::arg_type work_type) noexcept {
     default:
       return 1;
   }
+  all_packages_db.commit_changes();
   return 0;
 }

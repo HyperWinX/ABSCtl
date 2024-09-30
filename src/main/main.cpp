@@ -1,5 +1,5 @@
-#include "SQLiteCpp/Database.h"
-#include "SQLiteCpp/Transaction.h"
+#include "constants.hpp"
+#include "database.hpp"
 #include <iostream>
 #include <sstream>
 
@@ -13,8 +13,6 @@
 #include <parsers/configparse.hpp>
 #include <util/util.hpp>
 #include <util/constants.hpp>
-
-#include <SQLiteCpp/SQLiteCpp.h>
 
 
 [[noreturn]] void display_help() {
@@ -43,16 +41,6 @@
 }
 
 int main(int argc, char* argv[]) {
-  SQLite::Database db("database.db", SQLite::OPEN_CREATE | SQLite::OPEN_READWRITE);
-  SQLite::Transaction tr(db);
-
-  //db.exec("CREATE TABLE test (id INTEGER PRIMARY KEY AUTOINCREMENT, pkg_name VARCHAR(32), pkg_ver VARCHAR(32))");
-  //db.exec("INSERT INTO test VALUES (NULL, 'linux', '6.10.10'), (NULL, 'linux-zen', '6.10.10')");
-  //tr.commit();
-  SQLite::Statement query(db, "SELECT * FROM test WHERE id = 1");
-  std::cout << query.getColumnCount() << '\n';
-  exit(0);
-
   if (argc == 1 || !strcmp(argv[1], "help"))
     display_help();
 

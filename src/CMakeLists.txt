@@ -10,5 +10,6 @@ set(MAIN_SRC
   src/core/logging/logging.cpp
   src/parsers/argparse.cpp
   src/parsers/configparse.cpp
+  src/parsers/package_db.cpp
   src/util/util.cpp
 PARENT_SCOPE)

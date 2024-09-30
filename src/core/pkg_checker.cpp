@@ -1,3 +1,5 @@
+#include "database.hpp"
+#include "parsers/package_db.hpp"
 #include <string>
 #include <unordered_set>
 #include <algorithm>
@@ -17,7 +19,7 @@ size_t absctl::_save_response(void* ptr, size_t size, size_t nmemb, std::string*
   return nmemb * size;
 }
 
-void absctl::pkg_checker::verify_packages(std::vector<std::string>& URLs, std::vector<package>& packages) {
+void absctl::pkg_checker::verify_packages(std::vector<std::string>& URLs, std::vector<package>& packages, database_connector& connector) {
   std::unordered_set<std::string> failed_names;
   int running = 0;
 
@@ -50,11 +52,14 @@ void absctl::pkg_checker::verify_packages(std::vector<std::string>& URLs, std::v
     log.log(DEBUG, "All packages are found, skipping removal part");
     return;
   }
-  
+
   packages.erase(
     std::remove_if(packages.begin(), packages.end(), [&failed_names](const package& pkg) {
       return failed_names.count(pkg.name) > 0;
     }),
     packages.end()
   );
+
+  for (const auto& name : failed_names)
+    connector.add_pkg(name, "", db_type::UNTRACKED);
 }

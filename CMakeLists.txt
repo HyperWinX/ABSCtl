@@ -10,10 +10,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 add_subdirectory(src)
-add_subdirectory(dist/SQLiteCpp)
+add_subdirectory(dist/HSQLite)
 
 add_executable(absctl ${MAIN_SRC})
 target_include_directories(absctl PUBLIC ${INCLUDE_DIR})
 target_include_directories(absctl PUBLIC dist/eternal/include)
-target_include_directories(absctl PUBLIC dist/SQLiteCpp/include)
-target_link_libraries(absctl curl SQLiteCpp sqlite3 pthread dl)
+target_include_directories(absctl PUBLIC dist/HSQLite/include)
+target_link_libraries(absctl curl sqlite3)
