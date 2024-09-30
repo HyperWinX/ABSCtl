@@ -1,6 +1,6 @@
 [submodule "dist/eternal"]
 	path = dist/eternal
 	url = https://github.com/mapbox/eternal.git
-[submodule "dist/SQLiteCpp"]
+[submodule "dist/HSQLite"]
 	path = dist/HSQLite
 	url = https://github.com/HyperWinX/HSQLite.git
