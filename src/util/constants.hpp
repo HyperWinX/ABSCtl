@@ -28,4 +28,7 @@ namespace absctl {
 
   static constexpr char GET_PACKAGE_VER_CMD_PART1[] = "pacman -Q ";
   static constexpr char GET_PACKAGE_VER_CMD_PART2[] = " | awk '{print $2}' > /tmp/all_packages";
+
+  static constexpr char ALPM_ROOT[] = "/";
+  static constexpr char ALPM_DB_PATH[] = "/var/lib/pacman";
 }

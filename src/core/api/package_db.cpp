@@ -1,10 +1,9 @@
 #include "constants.hpp"
 #include "core/logging/logging.hpp"
-#include "parsers/configparse.hpp"
 #include <string>
 #include <format>
 
-#include <parsers/package_db.hpp>
+#include <core/api/package_db.hpp>
 
 int absctl::database_connector::execute_query(std::string query) {
   return db.exec(query);
@@ -24,13 +23,7 @@ bool absctl::database_connector::package_exists(std::string_view name, db_type t
 }
 
 void absctl::database_connector::remove_pkg(std::string_view name, db_type type) {
-  std::string query = "DELETE FROM ";
-  query.append(db_types.at(type).c_str());
-  query.append(" WHERE pkg_name = \"");
-  query.append(name);
-  query.append("\";");
-
-  db.exec(query);
+  db.exec(std::format("DELETE FROM {} WHERE pkg_name = \"{}\";", db_types.at(type).c_str(), name));
 }
 
 void absctl::database_connector::add_pkg(std::string_view name, std::string_view version, db_type type) {

@@ -10,7 +10,8 @@
 #include <core/logging/logging.hpp>
 #include <parsers/argparse.hpp>
 #include <util/util.hpp>
-#include <parsers/package_db.hpp>
+#include <core/api/package_db.hpp>
+#include <core/api/alpm.hpp>
 
 namespace absctl {
   struct configuration {
@@ -38,7 +39,7 @@ namespace absctl {
     configuration config;
     logger& log;
     exception_handler& exc_handler;
-    alpm_handle_t* handle;
+    alpm_api alpm;
     
     std::fstream open_config_file() noexcept;
     void get_all_packages() noexcept;
@@ -52,11 +53,11 @@ namespace absctl {
     bool is_tracked(std::string pkg);
   public:
     worker(logger& log, exception_handler& exc_handler) :
-      all_packages_db(get_database_path(), log), log(log), exc_handler(exc_handler) {
+      all_packages_db(get_database_path(), log), log(log), exc_handler(exc_handler), alpm(exc_handler) {
         
       }
     worker(configuration conf, logger& log, exception_handler& exc_handler) :
-      all_packages_db(get_database_path(), log), config(conf), log(log), exc_handler(exc_handler) { }
+      all_packages_db(get_database_path(), log), config(conf), log(log), exc_handler(exc_handler), alpm(exc_handler) { }
     ~worker() = default;
 
     void add_packages(std::vector<argument>& args) noexcept;

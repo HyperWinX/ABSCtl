@@ -1,5 +1,4 @@
-#include "parsers/package_db.hpp"
-#include <iostream>
+#include <core/api/package_db.hpp>
 #include <filesystem>
 
 #include <cstdio>
@@ -89,16 +88,11 @@ std::string absctl::worker::get_package_version(const std::string& name) noexcep
 
 std::unordered_map<std::string, std::string> absctl::worker::get_all_versions() noexcept {
   std::unordered_map<std::string, std::string> map;
-  system(PACMAN_GET_ALL);
-  std::ifstream fd{TMP_PACKAGES_PATH};
-  std::string name, version;
-  
-  while (!fd.eof()) {
-    std::getline(fd, name, ' ');
-    std::getline(fd, version, '\n');
-    map[name] = version;
-    name.clear();
-    version.clear();
+  for (auto pkg : packages) {
+    auto version = alpm.get_pkg_version(pkg.name);
+    if (!version)
+      continue;
+    map[pkg.name] = version.value();
   }
 
   return map;
@@ -106,20 +100,15 @@ std::unordered_map<std::string, std::string> absctl::worker::get_all_versions() 
 
 void absctl::worker::track_packages() noexcept {
   pkg_checker checker{packages.size(), log};
-  std::vector<std::string> URLs{packages.size()};
-  
-  log.log(INFO, "Constructing URL strings...");
-  for (size_t i = 0; i < packages.size(); ++i)
-    URLs[i] = construct_url(packages[i].name);
-  
-  log.log(INFO, "Verifying all packages - making multiple requests....");
-  checker.verify_packages(URLs, packages, all_packages_db);
-  log.log(INFO, "Parsing all package versions...");
+  log.log(INFO, "Getting list of package versions...");
   auto map = get_all_versions();
+  
   log.log(INFO, "Tracking all packages...");
-
-
   for (package& pkg : packages) {
+    if (!map.contains(pkg.name)) {
+      log.log(DEBUG, std::format("No package \"{}\" found", pkg.name).c_str());
+      continue;
+    }
     all_packages_db.add_pkg(pkg.name, map[pkg.name], db_type::TRACKED);
   }
   all_packages_db.commit_changes();

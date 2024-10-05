@@ -6,10 +6,11 @@ set(MAIN_SRC
   src/main/main.cpp
   src/core/worker.cpp
   src/core/pkg_checker.cpp
+  src/core/api/alpm.cpp
+  src/core/api/package_db.cpp
   src/core/exceptions/exception_handler.cpp
   src/core/logging/logging.cpp
   src/parsers/argparse.cpp
   src/parsers/configparse.cpp
-  src/parsers/package_db.cpp
   src/util/util.cpp
 PARENT_SCOPE)
